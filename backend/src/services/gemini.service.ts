@@ -110,27 +110,46 @@ async function generate(
   }
 
   try {
-    const res = await fetch(`${BASE}/${env.GEMINI_MODEL}:generateContent`, {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
-      signal: AbortSignal.timeout(45_000),
-      body: JSON.stringify({
-        contents: body.contents,
-        systemInstruction: body.systemInstruction ? { parts: [{ text: body.systemInstruction }] } : undefined,
-        generationConfig: {
-          temperature: body.temperature ?? 0.4,
-          ...(body.responseSchema ? { responseMimeType: "application/json", responseSchema: body.responseSchema } : {}),
-        },
-      }),
-    });
-    const json = (await res.json()) as {
+    type GeminiJson = {
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> }; finishReason?: string }>;
       usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
       error?: { message?: string; status?: string };
     };
-    if (!res.ok) {
-      await log(false, { errorCode: json.error?.status ?? String(res.status) });
-      console.error("Gemini error", res.status, json.error?.message);
+    const payload = JSON.stringify({
+      contents: body.contents,
+      systemInstruction: body.systemInstruction ? { parts: [{ text: body.systemInstruction }] } : undefined,
+      generationConfig: {
+        temperature: body.temperature ?? 0.4,
+        ...(body.responseSchema ? { responseMimeType: "application/json", responseSchema: body.responseSchema } : {}),
+      },
+    });
+    // Google sometimes answers 429/5xx during demand spikes. Retry with a short backoff, then try the
+    // optional fallback model, while staying inside the serverless function's time limit.
+    const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+    const models = [env.GEMINI_MODEL, env.GEMINI_FALLBACK_MODEL].filter((m, i, all) => m && all.indexOf(m) === i);
+    let res: Response | null = null;
+    let json: GeminiJson = {};
+    outer: for (const model of models) {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        if (Date.now() - started > 40_000) break outer;
+        res = await fetch(`${BASE}/${model}:generateContent`, {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
+          signal: AbortSignal.timeout(20_000),
+          body: payload,
+        });
+        json = (await res.json().catch(() => ({}))) as GeminiJson;
+        if (res.ok) break outer;
+        console.error("Gemini error", res.status, model, `attempt ${attempt}`, json.error?.message);
+        if (!RETRYABLE.has(res.status)) break outer;
+        await new Promise((r) => setTimeout(r, 1200 * attempt));
+      }
+    }
+    if (!res || !res.ok) {
+      await log(false, { errorCode: json.error?.status ?? String(res?.status ?? "none") });
+      if (res && RETRYABLE.has(res.status)) {
+        throw new HttpError(503, "ai_busy", "The AI service is very busy right now. Please try again in a minute.");
+      }
       throw new HttpError(502, "ai_error", "The AI service could not process this request. Please try again.");
     }
     const text = json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";

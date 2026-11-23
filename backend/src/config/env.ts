@@ -23,6 +23,8 @@ const schema = z.object({
   SESSION_TTL_DAYS: z.coerce.number().default(30),
   GEMINI_API_KEY: z.string().optional().default(""),
   GEMINI_MODEL: z.string().default("gemini-3.8-flash"),
+  // Optional second model tried when the main one is overloaded (e.g. a lighter "flash-lite" model).
+  GEMINI_FALLBACK_MODEL: z.string().optional().default(""),
   GEMINI_MOCK: bool,
   AI_DAILY_LIMIT: z.coerce.number().default(50),
   CLOUDINARY_CLOUD_NAME: z.string().optional().default(""),
