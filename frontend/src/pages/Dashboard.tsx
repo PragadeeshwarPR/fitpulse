@@ -25,12 +25,14 @@ export default function Dashboard() {
   const units = useUnits();
   const qc = useQueryClient();
   const toast = useToast();
+  // The AI insight is fetched on request only, so opening the dashboard never uses up AI quota.
+  const [wantInsight, setWantInsight] = useState(false);
   const insight = useQuery({
     queryKey: ["insight", todayKey()],
     queryFn: () => api<{ insight: string | null }>("/ai/insight"),
     staleTime: 6 * 3_600_000,
     retry: false,
-    enabled: date === todayKey(),
+    enabled: wantInsight && date === todayKey(),
   });
 
   if (isLoading) return <PageLoader />;
@@ -59,6 +61,12 @@ export default function Dashboard() {
         <DateNav value={date} onChange={setDate} />
       </div>
 
+      {date === todayKey() && !insight.data?.insight && (
+        <button className="btn-ghost w-full justify-start" onClick={() => setWantInsight(true)} disabled={insight.isFetching}>
+          <Sparkles className="size-4 text-green" />
+          {insight.isFetching ? "Thinking…" : insight.isError ? `${(insight.error as Error).message} Tap to retry.` : "Get today's AI insight"}
+        </button>
+      )}
       {insight.data?.insight && (
         <div className="animate-rise flex items-start gap-3 rounded-2xl border border-green/30 bg-green/5 p-4">
           <Sparkles className="mt-0.5 size-5 shrink-0 text-green" />

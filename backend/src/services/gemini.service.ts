@@ -125,7 +125,8 @@ async function generate(
     });
     // Google sometimes answers 429/5xx during demand spikes. Retry with a short backoff, then try the
     // optional fallback model, while staying inside the serverless function's time limit.
-    const RETRYABLE = new Set([429, 500, 502, 503, 504]);
+    // 429 (rate limit) is not retried: retrying would only burn more of the per-minute quota.
+    const RETRYABLE = new Set([500, 502, 503, 504]);
     const models = [env.GEMINI_MODEL, env.GEMINI_FALLBACK_MODEL].filter((m, i, all) => m && all.indexOf(m) === i);
     let res: Response | null = null;
     let json: GeminiJson = {};
@@ -147,6 +148,10 @@ async function generate(
     }
     if (!res || !res.ok) {
       await log(false, { errorCode: json.error?.status ?? String(res?.status ?? "none") });
+      if (res?.status === 429) {
+        const wait = /retry in (\d+)/i.exec(json.error?.message ?? "")?.[1];
+        throw new HttpError(429, "ai_rate_limited", `AI request limit reached. Please wait ${wait ? `${wait} seconds` : "a minute"} and try again.`);
+      }
       if (res && RETRYABLE.has(res.status)) {
         throw new HttpError(503, "ai_busy", "The AI service is very busy right now. Please try again in a minute.");
       }
