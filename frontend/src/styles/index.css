@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/* Theme tokens. Dark is the default; light is opt-in via data-theme="light". */
+:root,
+:root[data-theme="dark"] {
+  --bg: #080b0a;
+  --bg-2: #101613;
+  --card: #151d18;
+  --card-2: #1b251f;
+  --border: #233029;
+  --green: #39ff78;
+  --green-2: #16c65b;
+  --on-green: #06100a;
+  --text: #ffffff;
+  --text-2: #a3ada6;
+  --text-3: #6f7a73;
+  --error: #ff5252;
+  --warning: #ffc857;
+  --glow: 0 0 24px rgb(57 255 120 / 0.35);
+  /* Chart series (validated for CVD separation on the card surface). */
+  --series-1: #12b04f;
+  --series-2: #3d8ef0;
+  --series-3: #d45a7e;
+  --grid: #223029;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f4f7f5;
+  --bg-2: #eaf0ec;
+  --card: #ffffff;
+  --card-2: #f3f7f4;
+  --border: #dbe4de;
+  --green: #0fa94a;
+  --green-2: #0b8a3c;
+  --on-green: #ffffff;
+  --text: #0b1410;
+  --text-2: #4b5a51;
+  --text-3: #7d8a82;
+  --error: #d93636;
+  --warning: #b7791f;
+  --glow: 0 0 0 transparent;
+  --series-1: #16a34a;
+  --series-2: #2563eb;
+  --series-3: #db2777;
+  --grid: #e5ece7;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-line: var(--border);
+  --color-green: var(--green);
+  --color-green-2: var(--green-2);
+  --color-on-green: var(--on-green);
+  --color-ink: var(--text);
+  --color-ink-2: var(--text-2);
+  --color-ink-3: var(--text-3);
+  --color-danger: var(--error);
+  --color-warn: var(--warning);
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--green) 35%, transparent);
+}
+
+@utility card {
+  @apply rounded-3xl border border-line bg-card p-5;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition
+    disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98];
+}
+@utility btn-primary {
+  @apply btn bg-green text-on-green hover:brightness-110;
+  box-shadow: var(--glow);
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-card-2 text-ink hover:border-green/50;
+}
+@utility btn-danger {
+  @apply btn bg-danger text-white hover:brightness-110;
+}
+@utility input {
+  @apply w-full rounded-xl border border-line bg-bg-2 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-3
+    outline-none transition focus:border-green focus:ring-2 focus:ring-green/25;
+}
+@utility label {
+  @apply mb-1.5 block text-xs font-medium tracking-wide text-ink-2 uppercase;
+}
+@utility chip {
+  @apply rounded-full border border-line bg-card-2 px-3 py-1.5 text-xs font-medium text-ink-2 transition hover:text-ink;
+}
+@utility chip-active {
+  @apply border-green/60 bg-green/10 text-green;
+}
+@utility heading {
+  @apply font-display text-2xl font-bold tracking-tight;
+}
+
+.glow-text {
+  text-shadow: 0 0 18px color-mix(in srgb, var(--green) 55%, transparent);
+}
+:root[data-theme="light"] .glow-text {
+  text-shadow: none;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-rise {
+  animation: rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Recharts: keep focus outlines off SVG paths, tooltips themed. */
+.recharts-wrapper *:focus {
+  outline: none;
+}

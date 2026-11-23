@@ -1,0 +1,17 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+
+# Environment & secrets - never commit
+.env
+.env.*
+!.env.example
+
+# Local uploads (dev image storage fallback)
+backend/uploads/
+
+# Editor
+.vscode/
+.idea/
