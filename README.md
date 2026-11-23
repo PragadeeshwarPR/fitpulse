@@ -99,6 +99,12 @@ Frontend: `VITE_API_URL` (leave empty when the API is served from the same origi
 2. **Backend:** any Node host with env vars and HTTPS (Render, Railway, Fly.io, a VM). Set `NODE_ENV=production`, `TRUST_PROXY=true`, Cloudinary, SMTP and VAPID keys. Build with `npm run build`, start with `npm start`.
 3. **Frontend:** any static host (Netlify, Vercel, Cloudflare Pages, S3 + CloudFront). Build with `npm run build`, publish `dist/`, and add an SPA fallback to `index.html`. Serve `sw.js` with `Cache-Control: no-cache`.
 
+### Deploy on Vercel (two projects, one repo)
+1. **Database:** create a Neon project. Keep two strings: pooled (`DATABASE_URL`) and direct (`DIRECT_URL`).
+2. **API project:** import the repo in Vercel, Root Directory `backend`. Env vars: `NODE_ENV=production`, `TRUST_PROXY=true`, `DATABASE_URL`, `DIRECT_URL`, `GEMINI_API_KEY`, `CLOUDINARY_*`, `CRON_SECRET`, `CORS_ORIGINS` and `APP_URL` (both = the frontend URL). The build runs migrations and seeds the food database.
+3. **Frontend project:** import the same repo, Root Directory `frontend`. Edit `frontend/vercel.json` so the `/api` rewrite points at your API project's URL, then push.
+4. Limits: request bodies are capped at 4.5 MB (scanner photos are resized to far below that), and Hobby-plan cron runs once a day, so per-minute reminders need a paid plan or an external scheduler calling `GET /api/cron/reminders` with `Authorization: Bearer $CRON_SECRET`. Rate limits are per serverless instance.
+
 **Cookies across domains:** the session cookie is `HttpOnly; Secure; SameSite=None` in production. Browsers increasingly block third-party cookies, so serve the API **same-site** with the app:
 - best: a host rewrite/proxy from `https://app.example.com/api/*` to the backend (as `frontend/nginx.conf` does), with `VITE_API_URL` left empty; or
 - a sibling subdomain, e.g. app at `fitpulse.example.com` and API at `api.fitpulse.example.com`, with `VITE_API_URL=https://api.fitpulse.example.com`.

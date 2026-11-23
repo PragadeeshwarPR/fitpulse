@@ -19,6 +19,7 @@ const schema = z.object({
   APP_URL: z.string().default("http://localhost:5173"),
   TRUST_PROXY: bool,
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  CRON_SECRET: z.string().optional().default(""),
   SESSION_TTL_DAYS: z.coerce.number().default(30),
   GEMINI_API_KEY: z.string().optional().default(""),
   GEMINI_MODEL: z.string().default("gemini-2.5-flash"),

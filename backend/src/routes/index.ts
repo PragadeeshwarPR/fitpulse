@@ -21,6 +21,8 @@ const upload = multer({
 
 export const router = Router();
 
+// Called by an external scheduler (Vercel Cron, cron-job.org) because serverless has no timers.
+router.get("/cron/reminders", ah(misc.cronReminders));
 router.get("/health", (_req, res) => res.json({ ok: true }));
 
 // ---- Auth (public) ----

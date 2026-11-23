@@ -12,7 +12,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "vercel-build": "prisma generate && tsc && prisma migrate deploy && prisma db seed"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

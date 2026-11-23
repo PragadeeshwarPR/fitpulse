@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run vercel-build",
+  "outputDirectory": "public",
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 60,
+      "includeFiles": "{dist/**,prisma/**,node_modules/.prisma/**,node_modules/@prisma/client/**}"
+    }
+  },
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/index.js" }],
+  "crons": [{ "path": "/api/cron/reminders", "schedule": "0 9 * * *" }]
+}

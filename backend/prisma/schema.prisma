@@ -5,12 +5,16 @@
 // which makes offline sync idempotent (duplicate submissions become no-op upserts).
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // rhel target = Vercel / AWS Lambda runtime
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url       = env("DATABASE_URL")
+  // Non-pooled connection used only by `prisma migrate` (needed with Neon/pgbouncer poolers)
+  directUrl = env("DIRECT_URL")
 }
 
 enum Sex {

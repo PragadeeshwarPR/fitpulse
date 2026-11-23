@@ -6,7 +6,9 @@ import { env } from "../config/env.js";
 import { uid } from "../middleware/auth.js";
 import { parse } from "../middleware/validate.js";
 import { ACHIEVEMENTS, evaluateAchievements } from "../services/achievements.service.js";
-import { pushEnabled, sendPush } from "../services/push.service.js";
+import crypto from "node:crypto";
+import { pushEnabled, runReminderTick, sendPush } from "../services/push.service.js";
+import { unauthorized } from "../utils/errors.js";
 
 export async function listAchievements(req: Request, res: Response) {
   await evaluateAchievements(uid(req), req.tz);
@@ -80,4 +82,13 @@ export async function unsubscribePush(req: Request, res: Response) {
 export async function testPush(req: Request, res: Response) {
   const sent = await sendPush(uid(req), { title: "FitPulse", body: "Notifications are working 🎉", url: "/" });
   res.json({ sent });
+}
+
+/** Sends due reminders. Protected by `Authorization: Bearer $CRON_SECRET`. */
+export async function cronReminders(req: Request, res: Response) {
+  const given = Buffer.from(req.header("authorization") ?? "");
+  const want = Buffer.from(`Bearer ${env.CRON_SECRET}`);
+  if (!env.CRON_SECRET || given.length !== want.length || !crypto.timingSafeEqual(given, want)) throw unauthorized();
+  await runReminderTick();
+  res.json({ ok: true });
 }
