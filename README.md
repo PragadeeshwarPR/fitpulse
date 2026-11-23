@@ -11,7 +11,7 @@ Track activities, meals, calories, macros, water, sleep and body measurements; s
 | **Backend** | Node.js 22, Express, TypeScript, Prisma ORM, Zod validation |
 | **Database** | PostgreSQL 16 |
 | **Auth** | Email + password, Argon2id hashing, HTTP-only session cookies, email verification, password reset |
-| **AI** | Gemini (`gemini-2.5-flash` by default) for food image recognition, the fitness coach and daily insights. The key stays on the server. |
+| **AI** | Gemini (`gemini-3.8-flash` by default) for food image recognition, the fitness coach and daily insights. The key stays on the server. |
 | **Images** | Cloudinary (falls back to local disk in development); only URLs are stored in PostgreSQL |
 | **No Firebase** | |
 

@@ -22,7 +22,7 @@ const schema = z.object({
   CRON_SECRET: z.string().optional().default(""),
   SESSION_TTL_DAYS: z.coerce.number().default(30),
   GEMINI_API_KEY: z.string().optional().default(""),
-  GEMINI_MODEL: z.string().default("gemini-2.5-flash"),
+  GEMINI_MODEL: z.string().default("gemini-3.8-flash"),
   GEMINI_MOCK: bool,
   AI_DAILY_LIMIT: z.coerce.number().default(50),
   CLOUDINARY_CLOUD_NAME: z.string().optional().default(""),

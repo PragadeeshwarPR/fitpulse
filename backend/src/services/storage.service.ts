@@ -36,7 +36,9 @@ export function validateImage(buf: Buffer) {
   return type;
 }
 
-export async function storeImage(userId: string, buf: Buffer, type: string): Promise<string> {
+export async function storeImage(userId: string, buf: Buffer, type: string): Promise<string | null> {
+  // Serverless hosts have a read-only filesystem: without Cloudinary there is nowhere to keep photos.
+  if (!useCloudinary && env.isProd) return null;
   if (useCloudinary) {
     const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
       cloudinary.uploader
