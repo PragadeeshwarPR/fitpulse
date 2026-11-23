@@ -13,7 +13,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "vercel-build": "prisma generate && tsc && prisma migrate deploy && prisma db seed"
+    "vercel-build": "prisma generate && tsc && DATABASE_URL=\"${DATABASE_URL_UNPOOLED:-$DATABASE_URL}\" prisma migrate deploy && DATABASE_URL=\"${DATABASE_URL_UNPOOLED:-$DATABASE_URL}\" prisma db seed"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
