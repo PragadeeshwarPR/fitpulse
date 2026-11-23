@@ -100,8 +100,8 @@ Frontend: `VITE_API_URL` (leave empty when the API is served from the same origi
 3. **Frontend:** any static host (Netlify, Vercel, Cloudflare Pages, S3 + CloudFront). Build with `npm run build`, publish `dist/`, and add an SPA fallback to `index.html`. Serve `sw.js` with `Cache-Control: no-cache`.
 
 ### Deploy on Vercel (two projects, one repo)
-1. **Database:** create a Neon project. Keep two strings: pooled (`DATABASE_URL`) and direct (`DATABASE_URL_UNPOOLED`).
-2. **API project:** import the repo in Vercel, Root Directory `backend`. Env vars: `NODE_ENV=production`, `TRUST_PROXY=true`, `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `GEMINI_API_KEY`, `CLOUDINARY_*`, `CRON_SECRET`, `CORS_ORIGINS` and `APP_URL` (both = the frontend URL). The build runs migrations and seeds the food database.
+1. **Database:** create a Neon project. Use the direct (non-pooled) connection string as `DATABASE_URL`; the Vercel Storage integrations (Prisma Postgres, Neon) add it for you.
+2. **API project:** import the repo in Vercel, Root Directory `backend`. Env vars: `NODE_ENV=production`, `TRUST_PROXY=true`, `DATABASE_URL`, `GEMINI_API_KEY`, `CLOUDINARY_*`, `CRON_SECRET`, `CORS_ORIGINS` and `APP_URL` (both = the frontend URL). The build runs migrations and seeds the food database.
 3. **Frontend project:** import the same repo, Root Directory `frontend`. Edit `frontend/vercel.json` so the `/api` rewrite points at your API project's URL, then push.
 4. Limits: request bodies are capped at 4.5 MB (scanner photos are resized to far below that), and Hobby-plan cron runs once a day, so per-minute reminders need a paid plan or an external scheduler calling `GET /api/cron/reminders` with `Authorization: Bearer $CRON_SECRET`. Rate limits are per serverless instance.
 
